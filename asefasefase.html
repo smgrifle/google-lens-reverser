@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Reversal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #4a90e2;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+        img {
+            margin-top: 20px;
+            max-width: 90%;
+            height: auto;
+            border: 2px solid #4a90e2;
+            border-radius: 10px;
+            display: none; 
+        }
+        .button {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #357ABD;
+        }
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Upload an Image to Reverse</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    
+    <canvas id="canvas" class="hidden"></canvas>
+    <img id="originalImage" alt="Original Image">
+    <img id="reversedImage" alt="Reversed Image">
+
+    <button id="findSimilarButton" class="button hidden">Find Similar Images with Google Lens</button>
+    <p id="message" class="hidden"></p>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const originalImage = document.getElementById('originalImage');
+        const reversedImage = document.getElementById('reversedImage');
+        const findSimilarButton = document.getElementById('findSimilarButton');
+        const message = document.getElementById('message');
+
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    originalImage.src = e.target.result;
+                    originalImage.onload = () => {
+                        originalImage.style.display = 'block';
+                        canvas.width = originalImage.width;
+                        canvas.height = originalImage.height;
+                        ctx.drawImage(originalImage, 0, 0);
+                        reverseImage();
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function reverseImage() {
+            ctx.drawImage(originalImage, 0, 0, originalImage.width, originalImage.height);
+            ctx.scale(-1, 1);
+            ctx.drawImage(originalImage, -originalImage.width, 0, originalImage.width, originalImage.height);
+            const reversedDataUrl = canvas.toDataURL();
+            reversedImage.src = reversedDataUrl;
+            reversedImage.style.display = 'block'; 
+            findSimilarButton.classList.remove('hidden');
+            message.classList.add('hidden');
+        }
+
+        findSimilarButton.addEventListener('click', () => {
+            const reversedDataUrl = canvas.toDataURL();
+            const googleLensUrl = `https://lens.google.com/upload?url=${encodeURIComponent(reversedDataUrl)}`;
+            window.open(googleLensUrl, '_blank');
+            message.classList.remove('hidden');
+            message.textContent = 'Redirecting to Google Lens...';
+        });
+    </script>
+
+</body>
+</html>
